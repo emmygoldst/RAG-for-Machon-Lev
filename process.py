@@ -1,171 +1,140 @@
-{
-  "nbformat": 4,
-  "nbformat_minor": 0,
-  "metadata": {
-    "colab": {
-      "provenance": [],
-      "authorship_tag": "ABX9TyNjx7c5aF+/1nhVo4FFbLqg",
-      "include_colab_link": true
-    },
-    "kernelspec": {
-      "name": "python3",
-      "display_name": "Python 3"
-    },
-    "language_info": {
-      "name": "python"
-    }
-  },
-  "cells": [
-    {
-      "cell_type": "markdown",
-      "metadata": {
-        "id": "view-in-github",
-        "colab_type": "text"
-      },
-      "source": [
-        "<a href=\"https://colab.research.google.com/github/emmygoldst/RAG-for-Machon-Lev/blob/main/process.py\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
-      ]
-    },
-    {
-      "cell_type": "code",
-      "execution_count": 28,
-      "metadata": {
-        "id": "n69Rvl3bdl-t"
-      },
-      "outputs": [],
-      "source": [
-        "import json\n",
-        "import re\n",
-        "from typing import Union\n",
-        "\n",
-        "class Preprocessor:\n",
-        "    def __init__(self, file_path: str, chunk_size: int = 150) -> None:\n",
-        "        '''\n",
-        "        Initializes the Preprocessor with a file path and chunk size.\n",
-        "\n",
-        "        Args:\n",
-        "            file_path: Path to the JSON file containing content to process\n",
-        "            chunk_size: Target number of words per content chunk (default: 150)\n",
-        "\n",
-        "        Initializes:\n",
-        "            section_header: Marker text for relevant content sections (default: \"Questions?\")\n",
-        "            data: Processed content from the input file\n",
-        "            chunks: Final chunked content ready for use\n",
-        "        '''\n",
-        "        self.section_header = \"Questions?\"\n",
-        "        self.data = self.preprocess(file_path)\n",
-        "        self.chunks = self.content_chunks(chunk_size)\n",
-        "\n",
-        "    def preprocess(self, file_path: str) -> list[dict[str, Union[str, dict]]]:\n",
-        "        '''\n",
-        "        Loads and preprocesses JSON content from the specified file.\n",
-        "\n",
-        "        Args:\n",
-        "            file_path: Path to JSON file containing raw content\n",
-        "\n",
-        "        Returns:\n",
-        "            List of dictionaries containing cleaned content and metadata.\n",
-        "            Each dictionary has:\n",
-        "            - 'content': Cleaned text content\n",
-        "            - 'metadata': Dictionary with 'link' and 'title' information\n",
-        "\n",
-        "        Processing steps:\n",
-        "            1. Loads JSON data\n",
-        "            2. Cleans text (removes special chars, normalizes whitespace)\n",
-        "            3. Extracts content after section_header markers\n",
-        "        '''\n",
-        "        with open(file_path, 'r') as f:\n",
-        "            data = json.load(f)\n",
-        "\n",
-        "        flag = False\n",
-        "        word_to_find = self.section_header\n",
-        "        processed_content = []\n",
-        "\n",
-        "        for link, link_info in data.items():\n",
-        "            content = link_info.get('content', '')\n",
-        "            content = content.replace('\\n', ' ')\n",
-        "            content = re.sub(r\"[^\\u0590-\\u05FFa-zA-Z0-9.,!?;:'\\\"()\\-\\s]\", \"\", content)\n",
-        "            content = re.sub(r'\\s+', ' ', content).strip()\n",
-        "\n",
-        "            if content:\n",
-        "                questions_index = content.find(word_to_find)\n",
-        "                if questions_index != -1:\n",
-        "                    if flag:\n",
-        "                        content = content[questions_index + len(word_to_find):]\n",
-        "                    else:\n",
-        "                        flag = True\n",
-        "                    processed_data = {\n",
-        "                        \"content\": content,\n",
-        "                        \"metadata\": {\n",
-        "                            \"link\": link,\n",
-        "                            \"title\": link_info.get('title', '')\n",
-        "                        }\n",
-        "                    }\n",
-        "                    processed_content.append(processed_data)\n",
-        "\n",
-        "        return processed_content\n",
-        "\n",
-        "    def content_chunks(self, chunk_size: int = 150) -> list[dict]:\n",
-        "        '''\n",
-        "        Splits preprocessed content into semantically meaningful chunks.\n",
-        "\n",
-        "        Args:\n",
-        "            chunk_size: Target words per chunk (default: 150)\n",
-        "\n",
-        "        Returns:\n",
-        "            List of dictionaries where each contains:\n",
-        "            - 'content': A text chunk\n",
-        "            - 'metadata': Original metadata from preprocessing\n",
-        "\n",
-        "        Note:\n",
-        "            Uses chunk_content() for the actual splitting logic\n",
-        "        '''\n",
-        "        chunks = []\n",
-        "        for i in self.data:\n",
-        "            content = i['content']\n",
-        "            metadata = i['metadata']\n",
-        "            chunks.extend(self.chunk_content(content, chunk_size, metadata))\n",
-        "        return chunks\n",
-        "\n",
-        "    def chunk_content(self, content: str, chunk_size: int = 150, metadata: dict = None) -> list[dict]:\n",
-        "        '''\n",
-        "        Splits content into chunks while respecting sentence boundaries.\n",
-        "\n",
-        "        Args:\n",
-        "            content: Text content to split\n",
-        "            chunk_size: Target words per chunk (default: 150)\n",
-        "            metadata: Dictionary of metadata to attach to each chunk\n",
-        "\n",
-        "        Returns:\n",
-        "            List of dictionaries with chunked content and metadata\n",
-        "\n",
-        "        Chunking logic:\n",
-        "            1. Splits content into word lists\n",
-        "            2. Finds natural sentence endings within chunk size limits\n",
-        "            3. Preserves metadata with each chunk\n",
-        "            4. Ensures chunks don't break mid-sentence\n",
-        "        '''\n",
-        "        words = content.split()\n",
-        "        chunks = []\n",
-        "        start = 0\n",
-        "        while start < len(words):\n",
-        "            end = min(start + chunk_size, len(words))\n",
-        "            chunk = words[start:end]\n",
-        "            # Find the last word ending in a sentence (not a question!)\n",
-        "            split_idx = len(chunk)\n",
-        "            for i in reversed(range(len(chunk))):\n",
-        "                if chunk[i].endswith(('.', '!')):\n",
-        "                    split_idx = i + 1\n",
-        "                    break\n",
-        "            # Use the refined split point\n",
-        "            refined_chunk = chunk[:split_idx]\n",
-        "            chunks.append(\" \".join(refined_chunk))\n",
-        "            # Move the pointer forward\n",
-        "            start += split_idx if split_idx > 0 else chunk_size\n",
-        "        for i in range(len(chunks)):\n",
-        "            chunks[i] = {'content': chunks[i], 'metadata': metadata}\n",
-        "        return chunks"
-      ]
-    }
-  ]
-}
+# -*- coding: utf-8 -*-
+"""process.ipynb
+
+Automatically generated by Colab.
+
+Original file is located at
+    https://colab.research.google.com/drive/1uWwZ1Y_YXRPuIJJDIq8txoaN6_Fu-_cr
+"""
+
+import json
+import re
+from typing import Union
+
+class Preprocessor:
+    def __init__(self, file_path: str, chunk_size: int = 150) -> None:
+        '''
+        Initializes the Preprocessor with a file path and chunk size.
+
+        Args:
+            file_path: Path to the JSON file containing content to process
+            chunk_size: Target number of words per content chunk (default: 150)
+
+        Initializes:
+            section_header: Marker text for relevant content sections (default: "Questions?")
+            data: Processed content from the input file
+            chunks: Final chunked content ready for use
+        '''
+        self.section_header = "Questions?"
+        self.data = self.preprocess(file_path)
+        self.chunks = self.content_chunks(chunk_size)
+
+    def preprocess(self, file_path: str) -> list[dict[str, Union[str, dict]]]:
+        '''
+        Loads and preprocesses JSON content from the specified file.
+
+        Args:
+            file_path: Path to JSON file containing raw content
+
+        Returns:
+            List of dictionaries containing cleaned content and metadata.
+            Each dictionary has:
+            - 'content': Cleaned text content
+            - 'metadata': Dictionary with 'link' and 'title' information
+
+        Processing steps:
+            1. Loads JSON data
+            2. Cleans text (removes special chars, normalizes whitespace)
+            3. Extracts content after section_header markers
+        '''
+        with open(file_path, 'r') as f:
+            data = json.load(f)
+
+        flag = False
+        word_to_find = self.section_header
+        processed_content = []
+
+        for link, link_info in data.items():
+            content = link_info.get('content', '')
+            content = content.replace('\n', ' ')
+            content = re.sub(r"[^\u0590-\u05FFa-zA-Z0-9.,!?;:'\"()\-\s]", "", content)
+            content = re.sub(r'\s+', ' ', content).strip()
+
+            if content:
+                questions_index = content.find(word_to_find)
+                if questions_index != -1:
+                    if flag:
+                        content = content[questions_index + len(word_to_find):]
+                    else:
+                        flag = True
+                    processed_data = {
+                        "content": content,
+                        "metadata": {
+                            "link": link,
+                            "title": link_info.get('title', '')
+                        }
+                    }
+                    processed_content.append(processed_data)
+
+        return processed_content
+
+    def content_chunks(self, chunk_size: int = 150) -> list[dict]:
+        '''
+        Splits preprocessed content into semantically meaningful chunks.
+
+        Args:
+            chunk_size: Target words per chunk (default: 150)
+
+        Returns:
+            List of dictionaries where each contains:
+            - 'content': A text chunk
+            - 'metadata': Original metadata from preprocessing
+
+        Note:
+            Uses chunk_content() for the actual splitting logic
+        '''
+        chunks = []
+        for i in self.data:
+            content = i['content']
+            metadata = i['metadata']
+            chunks.extend(self.chunk_content(content, chunk_size, metadata))
+        return chunks
+
+    def chunk_content(self, content: str, chunk_size: int = 150, metadata: dict = None) -> list[dict]:
+        '''
+        Splits content into chunks while respecting sentence boundaries.
+
+        Args:
+            content: Text content to split
+            chunk_size: Target words per chunk (default: 150)
+            metadata: Dictionary of metadata to attach to each chunk
+
+        Returns:
+            List of dictionaries with chunked content and metadata
+
+        Chunking logic:
+            1. Splits content into word lists
+            2. Finds natural sentence endings within chunk size limits
+            3. Preserves metadata with each chunk
+            4. Ensures chunks don't break mid-sentence
+        '''
+        words = content.split()
+        chunks = []
+        start = 0
+        while start < len(words):
+            end = min(start + chunk_size, len(words))
+            chunk = words[start:end]
+            # Find the last word ending in a sentence (not a question!)
+            split_idx = len(chunk)
+            for i in reversed(range(len(chunk))):
+                if chunk[i].endswith(('.', '!')):
+                    split_idx = i + 1
+                    break
+            # Use the refined split point
+            refined_chunk = chunk[:split_idx]
+            chunks.append(" ".join(refined_chunk))
+            # Move the pointer forward
+            start += split_idx if split_idx > 0 else chunk_size
+        for i in range(len(chunks)):
+            chunks[i] = {'content': chunks[i], 'metadata': metadata}
+        return chunks
