@@ -73,7 +73,7 @@ class Embedder:
         Returns:
             List of top-k matching content strings
         '''
-        chunk_texts = [chunk['content'] for chunk in self.chunks]
+        chunk_texts = self.chunks
         query_embedding = self.model.encode(query, convert_to_tensor=True)
         query_embedding = query_embedding.cpu().numpy().astype('float32').reshape(1, -1)
 
