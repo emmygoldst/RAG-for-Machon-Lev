@@ -1,3 +1,5 @@
+global llm
+global embedder
 def build_augmented_prompt(query, retrieved_chunks):
       """Builds an augmented prompt for RAG by combining retrieved chunks with the query.
       
@@ -29,3 +31,10 @@ def extract_sources(retrieved_chunks):
           link = chunk['metadata'].get('link', 'No Link')
           sources.append(f"[{i}] {title} - {link}")
       return sources
+
+def run_rag_pipeline(query, k=3):
+    retrieved_chunks = embedder.retrieve_top_k_chunks(query, k)
+    prompt = build_augmented_prompt(query, retrieved_chunks)
+    response = llm.mistral_llm(prompt)
+    sources = extract_sources(retrieved_chunks)
+    return response, retrieved_chunks, prompt, sources
