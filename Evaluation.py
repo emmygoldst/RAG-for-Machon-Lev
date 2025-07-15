@@ -23,7 +23,7 @@ class RAGEvaluator:
             "F1": round(F1[0].item(), 3)
         }
 
-    def run_batch_eval(self, file_path:str)->:
+    def run_batch_eval(self, file_path):
         """Run batch evaluation on a set of QA pairs.
         
         Args:
