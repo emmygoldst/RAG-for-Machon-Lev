@@ -1,5 +1,6 @@
 from bert_score import score
 import json
+from Generator import *
 
 def bert_score_eval(reference, candidate):
     """Calculate BERTScore metrics between reference and candidate text.
@@ -18,7 +19,7 @@ def bert_score_eval(reference, candidate):
         "F1": round(F1[0].item(), 3)
     }
 
-def run_batch_eval(file_path, rag_pipeline_func):
+def run_batch_eval(file_path):
     """Run batch evaluation on a set of QA pairs.
     
     Args:
@@ -42,7 +43,7 @@ def run_batch_eval(file_path, rag_pipeline_func):
         print(f"\nReference Answer:\n{reference}")
 
         # Run RAG pipeline
-        response, retrieved_chunks, prompt, sources = rag_pipeline_func(question, k=4)
+        response, retrieved_chunks, prompt, sources = run_rag_pipeline(question, k=4)
 
         print(f"\nModel Answer:\n{response}")
 
