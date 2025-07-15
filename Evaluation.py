@@ -3,7 +3,7 @@ import json
 from Generator import *
 
 class RAGEvaluator:
-    def __init__(self):
+    def __init__(self, embedder, llm):
         self.embedder = embedder
         self.llm = llm
     def bert_score_eval(self, reference, candidate):
