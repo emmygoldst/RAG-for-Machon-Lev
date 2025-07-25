@@ -1,7 +1,7 @@
 import time
 from  Evaluation import RAGEvaluator
 from Generator import *
-def main():
+def main(embedder, llm):
     mode = input("Choose mode: [1] Single question | [2] Evaluate file: ")
 
     if mode.strip() == "2":
