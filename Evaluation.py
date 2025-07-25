@@ -59,7 +59,7 @@ class RAGEvaluator:
                 print("-" * 40)
 
             # Automatic evaluation
-            scores = bert_score_eval(reference, response)
+            scores = self.bert_score_eval(reference, response)
             print(f"\nBERTScore Evaluation:")
             print(f"Precision: {scores['Precision']}, Recall: {scores['Recall']}, F1: {scores['F1']}")
 
