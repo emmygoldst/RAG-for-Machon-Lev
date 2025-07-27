@@ -119,5 +119,9 @@ Example output for 1:
 '''
 ```
 
+To access the RAG json file from google drive use this command:
+``` python
+!gdown https://drive.google.com/uc?id=1WNkfWLy3hjF0RHWYTtVACUb4B2VePvBI
+```
 
 
