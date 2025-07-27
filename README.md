@@ -10,6 +10,14 @@ This repository contains the code for a Retrieval-Augmented Generation (RAG) sys
 - LLM.py: This is a python code used to initialize the tokenizer and large language model to use to generate responses. We chose a modified Mistral-7B from hugging face to fit our google colab: 'MaziyarPanahi/Mistral-7B-Instruct-v0.2-GPTQ'.
 - Generator.py: This is the python code to generate the response. It first builds a prompt, extracts the sources of the selected chunks, and runs the pipeline connecting the prompt with the LLM.
 - config.py: This is a python file containing the default parameters for the models' initializations. The user must import the file to use its contents but also the user can set up his own parameters, which is why it is set in a different file. The parameters include bit size, group size, act order (False for faster results, True for more accurate results), and the model name for the llm and tokenizer. In addition, it includes the file path for the jct scraped pages, which is the RAG file, the chunk size for the preprocessing steps, and the embedding model name.
+default settings:
+  bits=4
+  group_size=128
+  desc_act=False
+  llmodel='MaziyarPanahi/Mistral-7B-Instruct-v0.2-GPTQ'
+  file_path = 'jct_scraped_pages.json'
+  embedding_model = 'all-mpnet-base-v2'
+  chunksize=150
 - Evaluation.py: This is a python code that accpets a JSON file with evaluation questions and answers to compare the model answers to. It uses BERT score for the comparison and scores.The user can input his own evaluation file, or use the default file as mentioned above.
 - main.py: The main function that runs the whole model. It gets two values: the predefined llm and the predefined embedder model with embeddings and all. 
 
@@ -18,6 +26,7 @@ This repository contains the code for a Retrieval-Augmented Generation (RAG) sys
 # clone and install requirements:
 !git clone https://github.com/emmygoldst/RAG-for-Machon-Lev.git
 !pip install -r /content/RAG-for-Machon-Lev/requirements.txt
+
 # set up the embedding model and llm and preprocess the file based on the default values:
 %cd RAG-for-Machon-Lev/
 from process import Preprocessor
@@ -28,17 +37,7 @@ data = Preprocessor(FILE_PATH, CHUNKSIZE)
 chunks = data.content_chunks()
 llm = LLM(LLMODEL, BITS, GROUP_SIZE, DESC_ACT)
 embedder = Embedder(EMBEDDING_MODEL, chunks)
-'''
-default settings:
-  bits=4
-  group_size=128
-  desc_act=False
-  llmodel='MaziyarPanahi/Mistral-7B-Instruct-v0.2-GPTQ'
-  file_path = 'jct_scraped_pages.json'
-  embedding_model = 'all-mpnet-base-v2'
-  chunksize=150
-The user can change this paramteres easily in that same block
-'''
+
 # Run the main code:
 from main import *
 if __name__ == "__main__":
