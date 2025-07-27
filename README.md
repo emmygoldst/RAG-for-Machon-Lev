@@ -31,7 +31,7 @@ This repository contains the code for a Retrieval-Augmented Generation (RAG) sys
 - **`Evaluation.py`**  
   Accepts a JSON file of evaluation questions and uses BERTScore to compare model responses against reference answers.
 - **`main.py`**  
-  The entry point of the project. Accepts an LLM and embedder instance and runs the model in either single-question or evaluation mode.
+  The entry point of the project. Accepts an LLM and embedder instance and runs the model in either single-question or evaluation mode. The single-question mode accepts one question at a time, and the user must enter 'quit' to exit.
 ---
 
 ## Example Usage (Google Colab)
