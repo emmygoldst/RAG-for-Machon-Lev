@@ -93,6 +93,11 @@ Please enter your question (or type 'quit' to exit): How old is Machon Tal?
 ...
 Answer:
 Machon Tal was founded in September 2000.
+Sources:
+[1] Graduation for tal students computers, business and accounting - Jerusalem College of Technology  - https://www.jct.ac.il/en/news-and-updates/graduation-for-tal-students-computers-business-and-accounting/
+[2] Prof Bodenheimer z"l - Jerusalem College of Technology  - https://www.jct.ac.il/en/news-and-updates/prof-bodenheimer-zl/
+[3] Gallery - Jerusalem College of Technology  - https://www.jct.ac.il/en/tal-campus-project/gallery/
+Time taken: 11.55 seconds
 ```
 ---
 
