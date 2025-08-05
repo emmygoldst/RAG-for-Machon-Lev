@@ -26,11 +26,12 @@ def main(embedder, llm):
         start_time = time.time()
         try:
             response, retrieved_chunks, prompt, sources = run_rag_pipeline(embedder, llm, query, k=3)
-
-            print("Retrieved chunks:")
-            for i, chunk in enumerate(retrieved_chunks, 1):
-                print(f"Chunk {i}:\n{chunk['content']}")
-                print(f"(Source: {chunk['metadata'].get('title', '')})\n{'-' * 50}")
+            chunk = input("Choose mode: [1] Print chunks: | [2] Do not print chunks: ")
+            if chunk.strip() == "1":
+                print("Retrieved chunks:")
+                for i, chunk in enumerate(retrieved_chunks, 1):
+                    print(f"Chunk {i}:\n{chunk['content']}")
+                    print(f"(Source: {chunk['metadata'].get('title', '')})\n{'-' * 50}")
 
             print(f"Answer:\n{response}")
             print("Sources:")
