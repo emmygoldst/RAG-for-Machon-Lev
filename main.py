@@ -1,4 +1,5 @@
 import time
+import textwrap  # Import the textwrap module
 from  Evaluation import RAGEvaluator
 from Generator import *
 def main(embedder, llm):
@@ -26,18 +27,18 @@ def main(embedder, llm):
         start_time = time.time()
         try:
             response, retrieved_chunks, prompt, sources = run_rag_pipeline(embedder, llm, query, k=3)
-            chunk = input("Choose mode: [1] Print chunks: | [2] Do not print chunks: ")
-            if chunk.strip() == "1":
+            # Wrap the response text
+            wrapped_response = textwrap.fill(response, width=80) # You can adjust the width here
+            print(f"Answer:\n{wrapped_response}")
+            print("Sources:")
+            for source in sources:
+                print(source)
+            chunk = input("Print chunks? y/n: ")
+            if chunk.strip() == "y":
                 print("Retrieved chunks:")
                 for i, chunk in enumerate(retrieved_chunks, 1):
                     print(f"Chunk {i}:\n{chunk['content']}")
                     print(f"(Source: {chunk['metadata'].get('title', '')})\n{'-' * 50}")
-
-            print(f"Answer:\n{response}")
-            print("Sources:")
-            for source in sources:
-                print(source)
-
             end_time = time.time()
             print(f"Time taken: {end_time - start_time:.2f} seconds")
             print("-" * 60)
